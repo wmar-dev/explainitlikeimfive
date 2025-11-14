@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A chat application that uses FastAPI (backend), React (frontend), and Apple's MLX framework to run the Mistral-7B-Instruct-v0.3-4bit model locally for AI-powered explanations. The AI responds in the style of XKCD's "Thing Explainer", using only the 1,000 most common words to explain complex topics in simple terms.
+A chat application that uses FastAPI (backend), React (frontend), and Apple's MLX framework to run the Google Gemma 3 4B model locally for AI-powered explanations. The AI responds in the style of XKCD's "Thing Explainer", using only the 1,000 most common words to explain complex topics in simple terms.
 
 ## Commands
 
@@ -44,7 +44,7 @@ cd frontend && npm start
   - `/api/health`: Health check endpoint
   - `/api/chat`: Streaming chat endpoint using Server-Sent Events (SSE)
   - `/docs`: Interactive API documentation (Swagger UI)
-  - Uses `mlx-lm` library to load and run Mistral-7B-Instruct-v0.3-4bit
+  - Uses `mlx-lm` library to load and run Google Gemma 3 4B (4-bit quantized)
   - Supports conversation history for multi-turn dialogues
   - Streams responses in real-time
   - Pydantic models for request/response validation
@@ -63,6 +63,6 @@ cd frontend && npm start
 - Model runs locally using Apple MLX (optimized for Apple Silicon)
 - Backend uses FastAPI with CORS middleware and Pydantic validation
 - Frontend uses fetch API with ReadableStream for SSE
-- Messages use Mistral instruction format: `[INST] prompt [/INST]` with system prompt
+- Messages use Gemma 3 instruction format: `<start_of_turn>user\n...<end_of_turn>` with system prompt embedded in first user message
 - System prompt enforces XKCD Thing Explainer style (using only 1,000 most common words)
 - Automatic API documentation at `/docs` and `/redoc`
