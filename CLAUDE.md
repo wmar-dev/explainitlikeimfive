@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A chat application that uses FastAPI (backend), React (frontend), and Apple's MLX framework to run the Mistral-7B-Instruct-v0.3-4bit model locally for AI-powered explanations.
+A chat application that uses FastAPI (backend), React (frontend), and Apple's MLX framework to run the Mistral-7B-Instruct-v0.3-4bit model locally for AI-powered explanations. The AI responds in the style of XKCD's "Thing Explainer", using only the 1,000 most common words to explain complex topics in simple terms.
 
 ## Commands
 
@@ -48,6 +48,7 @@ cd frontend && npm start
   - Supports conversation history for multi-turn dialogues
   - Streams responses in real-time
   - Pydantic models for request/response validation
+  - **Thing Explainer system prompt**: Instructs the AI to explain everything using only the 1,000 most common words, breaking down complex topics into simple, everyday language
 
 ### Frontend (`/frontend`)
 - **React SPA** with modern hooks (useState, useEffect, useRef)
@@ -62,5 +63,6 @@ cd frontend && npm start
 - Model runs locally using Apple MLX (optimized for Apple Silicon)
 - Backend uses FastAPI with CORS middleware and Pydantic validation
 - Frontend uses fetch API with ReadableStream for SSE
-- Messages use Mistral instruction format: `[INST] prompt [/INST]`
+- Messages use Mistral instruction format: `[INST] prompt [/INST]` with system prompt
+- System prompt enforces XKCD Thing Explainer style (using only 1,000 most common words)
 - Automatic API documentation at `/docs` and `/redoc`
