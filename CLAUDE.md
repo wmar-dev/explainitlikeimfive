@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A chat application that uses Flask (backend), React (frontend), and Apple's MLX framework to run the Mistral-7B-Instruct-v0.3-4bit model locally for AI-powered explanations.
+A chat application that uses FastAPI (backend), React (frontend), and Apple's MLX framework to run the Mistral-7B-Instruct-v0.3-4bit model locally for AI-powered explanations.
 
 ## Commands
 
@@ -12,13 +12,11 @@ This project requires Python 3.10+ and Node.js/npm.
 
 **Backend setup and run:**
 ```bash
-# Install Python dependencies
-pip install -e .
-# OR use requirements.txt
-cd backend && pip install -r requirements.txt
+# Install Python dependencies using uv
+uv sync
 
-# Run the Flask server (will download model on first run)
-cd backend && python app.py
+# Run the FastAPI server (will download model on first run)
+uv run python backend/app.py
 ```
 
 **Frontend setup and run:**
@@ -33,7 +31,7 @@ npm start
 **Running both (in separate terminals):**
 ```bash
 # Terminal 1: Backend
-cd backend && python app.py
+uv run python backend/app.py
 
 # Terminal 2: Frontend
 cd frontend && npm start
@@ -42,12 +40,14 @@ cd frontend && npm start
 ## Architecture
 
 ### Backend (`/backend`)
-- **app.py**: Flask server with MLX integration
+- **app.py**: FastAPI server with MLX integration
   - `/api/health`: Health check endpoint
   - `/api/chat`: Streaming chat endpoint using Server-Sent Events (SSE)
+  - `/docs`: Interactive API documentation (Swagger UI)
   - Uses `mlx-lm` library to load and run Mistral-7B-Instruct-v0.3-4bit
   - Supports conversation history for multi-turn dialogues
   - Streams responses in real-time
+  - Pydantic models for request/response validation
 
 ### Frontend (`/frontend`)
 - **React SPA** with modern hooks (useState, useEffect, useRef)
@@ -56,10 +56,11 @@ cd frontend && npm start
   - Conversation history management
   - Health status indicator
   - Responsive design with gradient UI
-- **Proxy configuration**: Development server proxies API requests to Flask backend (port 5000)
+- **Proxy configuration**: Development server proxies API requests to FastAPI backend (port 5000)
 
 ### Key Technical Details
 - Model runs locally using Apple MLX (optimized for Apple Silicon)
-- Backend uses Flask-CORS for cross-origin requests
+- Backend uses FastAPI with CORS middleware and Pydantic validation
 - Frontend uses fetch API with ReadableStream for SSE
 - Messages use Mistral instruction format: `[INST] prompt [/INST]`
+- Automatic API documentation at `/docs` and `/redoc`
