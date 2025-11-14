@@ -4,7 +4,7 @@ A chat application that uses FastAPI, React, and Apple's MLX framework to run AI
 
 ## Features
 
-- Local AI chat powered by Google Gemma 3 4B (4-bit quantized)
+- Local AI chat powered by Google Gemma 3 12B (4-bit quantized)
 - Real-time streaming responses
 - Conversation history support
 - Beautiful, responsive UI
@@ -50,7 +50,7 @@ You need to run both the backend and frontend in separate terminal windows.
 uv run python backend/app.py
 ```
 
-The first time you run this, it will download the Gemma 3 4B model (~2.5GB). This may take a few minutes depending on your internet connection.
+The first time you run this, it will download the Gemma 3 12B model (~7GB). This may take a few minutes depending on your internet connection.
 
 The backend will start on `http://localhost:5000`
 
@@ -123,7 +123,7 @@ Response: Server-Sent Events stream with JSON data chunks.
 
 - **Backend**: FastAPI, MLX, mlx-lm
 - **Frontend**: React 18, Modern CSS
-- **AI Model**: Google Gemma 3 4B (4-bit quantized for efficiency)
+- **AI Model**: Google Gemma 3 12B (4-bit quantized for efficiency)
 - **Communication**: REST API with Server-Sent Events for streaming
 - **Style**: XKCD Thing Explainer (using only the 1,000 most common words)
 
@@ -148,7 +148,7 @@ Response: Server-Sent Events stream with JSON data chunks.
 - Check that port 3000 is available
 
 **Model loading is slow:**
-- This is normal on first run (downloading ~2.5GB model)
+- This is normal on first run (downloading ~7GB model)
 - Subsequent runs will be faster as the model is cached
 
 **API errors:**
