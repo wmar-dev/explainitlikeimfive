@@ -1,12 +1,12 @@
 [project]
 name = "explainitlikeimfive"
 version = "0.1.0"
-description = "A chat application using Flask, React, and MLX for AI-powered explanations"
+description = "A chat application using FastAPI, React, and MLX for AI-powered explanations"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "flask>=3.0.0",
-    "flask-cors>=4.0.0",
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
     "mlx-lm>=0.9.0",
     "mlx>=0.12.0",
     "sentencepiece>=0.2.1",

@@ -1,15 +1,39 @@
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from mlx_lm import load, generate
 import json
+from typing import List, Dict
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global variables for model
 model = None
 tokenizer = None
 MODEL_NAME = "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
+
+# Pydantic models for request/response
+class Message(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: List[Message] = []
+
+class HealthResponse(BaseModel):
+    status: str
+    model_loaded: bool
 
 def load_model():
     """Load the MLX model and tokenizer"""
@@ -18,31 +42,32 @@ def load_model():
     model, tokenizer = load(MODEL_NAME)
     print("Model loaded successfully!")
 
-@app.route('/api/health', methods=['GET'])
-def health():
+@app.on_event("startup")
+async def startup_event():
+    """Load model on startup"""
+    load_model()
+
+@app.get('/api/health', response_model=HealthResponse)
+async def health():
     """Health check endpoint"""
-    return jsonify({
+    return {
         "status": "ok",
         "model_loaded": model is not None
-    })
+    }
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
+@app.post('/api/chat')
+async def chat(request: ChatRequest):
     """Chat endpoint that streams responses"""
-    data = request.json
-    user_message = data.get('message', '')
-    conversation_history = data.get('history', [])
-
-    if not user_message:
-        return jsonify({"error": "No message provided"}), 400
+    if not request.message:
+        raise HTTPException(status_code=400, detail="No message provided")
 
     if model is None:
-        return jsonify({"error": "Model not loaded"}), 503
+        raise HTTPException(status_code=503, detail="Model not loaded")
 
     # Build the prompt with conversation history
-    prompt = build_prompt(conversation_history, user_message)
+    prompt = build_prompt(request.history, request.message)
 
-    def generate_stream():
+    async def generate_stream():
         """Generator function for streaming responses"""
         try:
             response = generate(
@@ -61,26 +86,26 @@ def chat():
             error_msg = json.dumps({'error': str(e)})
             yield f"data: {error_msg}\n\n"
 
-    return Response(
+    return StreamingResponse(
         generate_stream(),
-        mimetype='text/event-stream',
+        media_type='text/event-stream',
         headers={
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no'
         }
     )
 
-def build_prompt(history, user_message):
+def build_prompt(history: List[Message], user_message: str) -> str:
     """Build a prompt from conversation history and new message"""
     # Mistral instruction format
     messages = []
 
     # Add conversation history
     for msg in history:
-        if msg['role'] == 'user':
-            messages.append(f"[INST] {msg['content']} [/INST]")
+        if msg.role == 'user':
+            messages.append(f"[INST] {msg.content} [/INST]")
         else:
-            messages.append(msg['content'])
+            messages.append(msg.content)
 
     # Add current user message
     messages.append(f"[INST] {user_message} [/INST]")
@@ -88,5 +113,5 @@ def build_prompt(history, user_message):
     return " ".join(messages)
 
 if __name__ == '__main__':
-    load_model()
-    app.run(debug=True, port=5000, threaded=True)
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=5000)
