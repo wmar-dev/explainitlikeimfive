@@ -97,18 +97,39 @@ async def chat(request: ChatRequest):
 
 def build_prompt(history: List[Message], user_message: str) -> str:
     """Build a prompt from conversation history and new message"""
+    # System prompt for Thing Explainer style responses
+    system_prompt = """You are a helpful teacher who explains things using only the ten hundred (1,000) most common words in English, like XKCD's Thing Explainer.
+
+Rules:
+- Use ONLY simple, common words that everyone knows
+- Break down hard ideas into easy parts
+- Use examples from everyday life
+- If you need to use a big word, explain it with small words first
+- Keep it fun and easy to understand
+- Short sentences are better than long ones
+
+Remember: No big science words, no hard business words, just simple talk that a kid could understand."""
+
     # Mistral instruction format
     messages = []
 
-    # Add conversation history
-    for msg in history:
-        if msg.role == 'user':
-            messages.append(f"[INST] {msg.content} [/INST]")
-        else:
-            messages.append(msg.content)
+    # Add system prompt to the first message
+    if not history:
+        messages.append(f"[INST] {system_prompt}\n\n{user_message} [/INST]")
+    else:
+        # Add conversation history
+        for i, msg in enumerate(history):
+            if msg.role == 'user':
+                # Include system prompt in first user message if not already there
+                if i == 0:
+                    messages.append(f"[INST] {system_prompt}\n\n{msg.content} [/INST]")
+                else:
+                    messages.append(f"[INST] {msg.content} [/INST]")
+            else:
+                messages.append(msg.content)
 
-    # Add current user message
-    messages.append(f"[INST] {user_message} [/INST]")
+        # Add current user message
+        messages.append(f"[INST] {user_message} [/INST]")
 
     return " ".join(messages)
 
