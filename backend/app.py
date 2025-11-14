@@ -20,7 +20,7 @@ app.add_middleware(
 # Global variables for model
 model = None
 tokenizer = None
-MODEL_NAME = "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
+MODEL_NAME = "mlx-community/gemma-3-4b-it-4bit"
 
 # Pydantic models for request/response
 class Message(BaseModel):
@@ -110,28 +110,29 @@ Rules:
 
 Remember: No big science words, no hard business words, just simple talk that a kid could understand."""
 
-    # Mistral instruction format
-    messages = []
+    # Gemma 3 instruction format
+    prompt_parts = []
 
-    # Add system prompt to the first message
-    if not history:
-        messages.append(f"[INST] {system_prompt}\n\n{user_message} [/INST]")
-    else:
-        # Add conversation history
-        for i, msg in enumerate(history):
+    # Add conversation history
+    if history:
+        for msg in history:
             if msg.role == 'user':
-                # Include system prompt in first user message if not already there
-                if i == 0:
-                    messages.append(f"[INST] {system_prompt}\n\n{msg.content} [/INST]")
-                else:
-                    messages.append(f"[INST] {msg.content} [/INST]")
+                prompt_parts.append(f"<start_of_turn>user\n{msg.content}<end_of_turn>\n")
             else:
-                messages.append(msg.content)
+                prompt_parts.append(f"<start_of_turn>model\n{msg.content}<end_of_turn>\n")
 
-        # Add current user message
-        messages.append(f"[INST] {user_message} [/INST]")
+    # Add current user message with system prompt included in first message
+    if not history:
+        # First message: include system prompt
+        prompt_parts.append(f"<start_of_turn>user\n{system_prompt}\n\n{user_message}<end_of_turn>\n")
+    else:
+        # Subsequent messages
+        prompt_parts.append(f"<start_of_turn>user\n{user_message}<end_of_turn>\n")
 
-    return " ".join(messages)
+    # Add model turn indicator
+    prompt_parts.append("<start_of_turn>model\n")
+
+    return "".join(prompt_parts)
 
 if __name__ == '__main__':
     import uvicorn
