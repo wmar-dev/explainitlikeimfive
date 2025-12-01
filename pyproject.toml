@@ -10,4 +10,6 @@ dependencies = [
     "mlx-lm>=0.9.0",
     "mlx>=0.12.0",
     "sentencepiece>=0.2.1",
+    "nltk>=3.9.2",
+    "jupyter>=1.1.1",
 ]
