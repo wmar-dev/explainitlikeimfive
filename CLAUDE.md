@@ -57,7 +57,7 @@ cd frontend && npm start
   - Conversation history management
   - Health status indicator
   - Responsive design with gradient UI
-- **Proxy configuration**: Development server proxies API requests to FastAPI backend (port 5000)
+- **Proxy configuration**: Development server proxies API requests to FastAPI backend (port 8080)
 
 ### Key Technical Details
 - Model runs locally using Apple MLX (optimized for Apple Silicon)

@@ -148,4 +148,4 @@ Remember: No big science words, no hard business words, just simple talk that a 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+    uvicorn.run(app, host="127.0.0.1", port=8080)
