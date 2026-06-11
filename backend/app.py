@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import Dict, List
 
@@ -22,6 +23,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault(
     "WORD_CORPUS_PATH", os.path.join(PROJECT_ROOT, "xkcd-words.txt")
 )
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -62,9 +66,9 @@ class HealthResponse(BaseModel):
 def load_model():
     """Load the MLX model and tokenizer"""
     global model, tokenizer, prompt_cache
-    print(f"Loading model: {MODEL_NAME}")
+    logger.info(f"Loading model: {MODEL_NAME}")
     model, tokenizer = load(MODEL_NAME)
-    print("Model loaded successfully!")
+    logger.info("Model loaded successfully!")
     prompt_cache = make_prompt_cache(model, max_kv_size=4096)
 
 
@@ -108,6 +112,7 @@ async def chat(request: ChatRequest):
             # model one chance to rewrite it using only allowed words.
             check = check_words_in_corpus(response)
             if not check["all_words_in_corpus"]:
+                logger.info(f"Words not in corpus: {check['words_not_in_corpus']}")
                 retry_prompt = build_retry_prompt(
                     request.history,
                     request.message,
