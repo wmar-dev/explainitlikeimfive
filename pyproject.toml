@@ -13,3 +13,8 @@ dependencies = [
     "nltk>=3.9.2",
     "jupyter>=1.1.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]

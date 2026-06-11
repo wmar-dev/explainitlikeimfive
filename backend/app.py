@@ -9,6 +9,8 @@ from mlx_lm.models.cache import make_prompt_cache
 from mlx_lm.utils import MODEL_REMAPPING
 from pydantic import BaseModel
 
+from tools import check_words_in_corpus
+
 # Gemma 4 MLX quantized models use model_type "gemma4_unified" (multimodal),
 # but mlx-lm's text-only module expects "gemma4". Remap so the text model loads.
 MODEL_REMAPPING["gemma4_unified"] = "gemma4"
@@ -28,6 +30,9 @@ app.add_middleware(
 model = None
 tokenizer = None
 MODEL_NAME = "mlx-community/gemma-4-12B-it-OptiQ-4bit"
+
+# Tools available for tool-calling (see https://www.tryaisuite.com/docs/tool-calling)
+tools = [check_words_in_corpus]
 
 
 # Pydantic models for request/response
