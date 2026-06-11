@@ -63,6 +63,6 @@ cd frontend && npm start
 - Model runs locally using Apple MLX (optimized for Apple Silicon)
 - Backend uses FastAPI with CORS middleware and Pydantic validation
 - Frontend uses fetch API with ReadableStream for SSE
-- Messages use Gemma 3 instruction format: `<start_of_turn>user\n...<end_of_turn>` with system prompt embedded in first user message
+- Messages use Gemma 4 instruction format: `<|turn>user\n...<turn|>` with `<bos>` prefix and `<|channel>thought\n<channel|>` generation prompt
 - System prompt enforces XKCD Thing Explainer style (using only 1,000 most common words)
 - Automatic API documentation at `/docs` and `/redoc`

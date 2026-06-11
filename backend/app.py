@@ -6,7 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from mlx_lm import generate, load
 from mlx_lm.models.cache import make_prompt_cache
+from mlx_lm.utils import MODEL_REMAPPING
 from pydantic import BaseModel
+
+# Gemma 4 MLX quantized models use model_type "gemma4_unified" (multimodal),
+# but mlx-lm's text-only module expects "gemma4". Remap so the text model loads.
+MODEL_REMAPPING["gemma4_unified"] = "gemma4"
 
 app = FastAPI()
 
@@ -102,8 +107,7 @@ async def chat(request: ChatRequest):
 
 
 def build_prompt(history: List[Message], user_message: str) -> str:
-    """Build a prompt from conversation history and new message"""
-    # System prompt for Thing Explainer style responses
+    """Build a prompt from conversation history and new message using Gemma 4 format"""
     system_prompt = """You are a helpful teacher who explains things using only the ten hundred (1,000) most common words in English, like XKCD's Thing Explainer.
 
 Rules:
@@ -116,33 +120,27 @@ Rules:
 
 Remember: No big science words, no hard business words, just simple talk that a kid could understand."""
 
-    # Gemma 3 instruction format
-    prompt_parts = []
+    prompt_parts = ["<bos>"]
 
-    # Add conversation history
     if history:
         for msg in history:
             if msg.role == "user":
                 prompt_parts.append(
-                    f"<start_of_turn>user\n{msg.content}<end_of_turn>\n"
+                    f"<|turn>user\n{msg.content}<turn|>\n"
                 )
             else:
                 prompt_parts.append(
-                    f"<start_of_turn>model\n{msg.content}<end_of_turn>\n"
+                    f"<|turn>model\n{msg.content}<turn|>\n"
                 )
 
-    # Add current user message with system prompt included in first message
     if not history:
-        # First message: include system prompt
         prompt_parts.append(
-            f"<start_of_turn>user\n{system_prompt}\n\n{user_message}<end_of_turn>\n"
+            f"<|turn>system\n{system_prompt}<turn|>\n<|turn>user\n{user_message}<turn|>\n"
         )
     else:
-        # Subsequent messages
-        prompt_parts.append(f"<start_of_turn>user\n{user_message}<end_of_turn>\n")
+        prompt_parts.append(f"<|turn>user\n{user_message}<turn|>\n")
 
-    # Add model turn indicator
-    prompt_parts.append("<start_of_turn>model\n")
+    prompt_parts.append("<|turn>model\n<|channel>thought\n<channel|>")
 
     return "".join(prompt_parts)
 
