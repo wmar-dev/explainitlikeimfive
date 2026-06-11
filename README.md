@@ -4,7 +4,7 @@ A chat application that uses FastAPI, React, and Apple's MLX framework to run AI
 
 ## Features
 
-- Local AI chat powered by Google Gemma 3 12B (4-bit quantized)
+- Local AI chat powered by Google Gemma 4 12B (4-bit OptiQ quantized)
 - Real-time streaming responses
 - Conversation history support
 - Beautiful, responsive UI
@@ -25,19 +25,20 @@ git clone <your-repo-url>
 cd explainitlikeimfive
 ```
 
-### 2. Set up the backend
+### 2. Install dependencies
+
+Use the included `Makefile` to install both the backend and frontend dependencies:
 
 ```bash
-# Install Python dependencies using uv
-uv sync
+make install
 ```
 
-### 3. Set up the frontend
+This is equivalent to running `uv sync` for the backend and `npm install` in `frontend/` for the frontend.
+
+To remove installed dependencies and build artifacts (`node_modules`, `frontend/build`, `.venv`):
 
 ```bash
-cd frontend
-npm install
-cd ..
+make clean
 ```
 
 ## Running the Application
@@ -47,18 +48,17 @@ You need to run both the backend and frontend in separate terminal windows.
 ### Terminal 1: Start the Backend
 
 ```bash
-uv run python backend/app.py
+make run-backend
 ```
 
-The first time you run this, it will download the Gemma 3 12B model (~7GB). This may take a few minutes depending on your internet connection.
+The first time you run this, it will download the Gemma 4 12B model (~7GB). This may take a few minutes depending on your internet connection.
 
 The backend will start on `http://localhost:5000`
 
 ### Terminal 2: Start the Frontend
 
 ```bash
-cd frontend
-npm start
+make run-frontend
 ```
 
 The frontend will start on `http://localhost:3000` and automatically open in your browser.
@@ -119,11 +119,17 @@ Request body:
 
 Response: Server-Sent Events stream with JSON data chunks.
 
+## Tool Calling
+
+The backend gives the model a `check_words_in_corpus` tool (defined in `backend/tools.py`) that checks whether a piece of text only uses words from the simple-word vocabulary (`xkcd-words.txt`).
+
+After generating a response, the backend calls this tool to check the response against the vocabulary list. If it finds words outside the list, it asks the model to rewrite the response without those words and sends the corrected version to the user.
+
 ## Technology Stack
 
 - **Backend**: FastAPI, MLX, mlx-lm
 - **Frontend**: React 18, Modern CSS
-- **AI Model**: Google Gemma 3 12B (4-bit quantized for efficiency)
+- **AI Model**: Google Gemma 4 12B (4-bit OptiQ quantized, [`mlx-community/gemma-4-12B-it-OptiQ-4bit`](https://huggingface.co/mlx-community/gemma-4-12B-it-OptiQ-4bit))
 - **Communication**: REST API with Server-Sent Events for streaming
 - **Style**: XKCD Thing Explainer (using only the 1,000 most common words)
 
