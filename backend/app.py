@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict, List
 
 from fastapi import FastAPI, HTTPException
@@ -14,6 +15,13 @@ from tools import check_words_in_corpus
 # Gemma 4 MLX quantized models use model_type "gemma4_unified" (multimodal),
 # but mlx-lm's text-only module expects "gemma4". Remap so the text model loads.
 MODEL_REMAPPING["gemma4_unified"] = "gemma4"
+
+# Default vocabulary corpus for check_words_in_corpus, used to keep chat
+# responses in the XKCD Simple Writer word list.
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault(
+    "WORD_CORPUS_PATH", os.path.join(PROJECT_ROOT, "xkcd-words.txt")
+)
 
 app = FastAPI()
 
@@ -96,6 +104,24 @@ async def chat(request: ChatRequest):
                 prompt_cache=prompt_cache,
             )
 
+            # If the response strays from the simple-word corpus, give the
+            # model one chance to rewrite it using only allowed words.
+            check = check_words_in_corpus(response)
+            if not check["all_words_in_corpus"]:
+                retry_prompt = build_retry_prompt(
+                    request.history,
+                    request.message,
+                    response,
+                    check["words_not_in_corpus"],
+                )
+                response = generate(
+                    model,
+                    tokenizer,
+                    prompt=retry_prompt,
+                    max_tokens=512,
+                    verbose=False,
+                )
+
             # Send the complete response
             yield f"data: {json.dumps({'content': response, 'done': False})}\n\n"
             yield f"data: {json.dumps({'content': '', 'done': True})}\n\n"
@@ -148,6 +174,31 @@ Remember: No big science words, no hard business words, just simple talk that a 
     prompt_parts.append("<|turn>model\n<|channel>thought\n<channel|>")
 
     return "".join(prompt_parts)
+
+
+def build_retry_prompt(
+    history: List[Message],
+    user_message: str,
+    draft_response: str,
+    bad_words: List[str],
+) -> str:
+    """Build a follow-up prompt asking the model to rewrite a draft response
+    without the given words, which are not in the simple-word corpus."""
+    prompt = build_prompt(history, user_message)
+    prompt = prompt.removesuffix("<|turn>model\n<|channel>thought\n<channel|>")
+
+    feedback = (
+        "Your last answer used these words, which are not on the list of "
+        f"simple words: {', '.join(bad_words)}. Rewrite your answer so it "
+        "means the same thing, using only simple, common words. Do not use "
+        "any of those words."
+    )
+
+    prompt += f"<|turn>model\n{draft_response}<turn|>\n"
+    prompt += f"<|turn>user\n{feedback}<turn|>\n"
+    prompt += "<|turn>model\n<|channel>thought\n<channel|>"
+
+    return prompt
 
 
 if __name__ == "__main__":
