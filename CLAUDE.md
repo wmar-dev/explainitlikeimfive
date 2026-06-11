@@ -44,7 +44,7 @@ cd frontend && npm start
   - `/api/health`: Health check endpoint
   - `/api/chat`: Streaming chat endpoint using Server-Sent Events (SSE)
   - `/docs`: Interactive API documentation (Swagger UI)
-  - Uses `mlx-lm` library to load and run Google Gemma 3 12B (4-bit quantized)
+  - Uses `mlx-lm` library to load and run Google Gemma 4 12B (4-bit OptiQ quantized)
   - Supports conversation history for multi-turn dialogues
   - Streams responses in real-time
   - Pydantic models for request/response validation

@@ -22,7 +22,7 @@ app.add_middleware(
 # Global variables for model
 model = None
 tokenizer = None
-MODEL_NAME = "mlx-community/gemma-3-12b-it-4bit"
+MODEL_NAME = "mlx-community/gemma-4-12B-it-OptiQ-4bit"
 
 
 # Pydantic models for request/response
