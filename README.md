@@ -1,6 +1,6 @@
 # Explain It Like I'm Five
 
-A chat application that uses FastAPI, React, and Apple's MLX framework to run AI models locally for simple, clear explanations in the style of XKCD's "Thing Explainer" (using only the 1,000 most common words).
+A chat application that uses FastAPI, React, and Apple's MLX framework to run AI models locally for simple, clear explanations in the style of XKCD's "Thing Explainer" and [Simple Writer](https://xkcd.com/simplewriter/) (using only the 1,000 most common words).
 
 ## Features
 
@@ -134,6 +134,7 @@ Response: Server-Sent Events stream with JSON data chunks.
 - Model responses are streamed in real-time for a better user experience
 - The quantized 4-bit model provides a good balance between quality and performance
 - All explanations use only the 1,000 most common words, making complex topics simple to understand
+- The vocabulary list (`xkcd-words.txt`) is fetched from XKCD's [Simple Writer](https://xkcd.com/simplewriter/) tool via `scripts/xkcdwords.py`
 
 ## Troubleshooting
 
