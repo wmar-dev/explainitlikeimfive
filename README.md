@@ -12,7 +12,7 @@ A chat application that uses FastAPI, React, and Apple's MLX framework to run AI
 
 ## Prerequisites
 
-- **macOS** with Apple Silicon (M1/M2/M3) - MLX is optimized for Apple Silicon
+- **macOS** with Apple Silicon - MLX is optimized for Apple Silicon
 - **Python 3.10+**
 - **Node.js 16+** and npm
 
